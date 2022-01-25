@@ -2,31 +2,29 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class mapGenerator : MonoBehaviour
+public class MapGenerator : MonoBehaviour
 {
     public int size;
     public int seed;
     public int octaves;
     public float persistance;
     public float lacunarity;
+    public float scale = 0.1f;
 
     public Material material;
     Texture2D perlinTex;
+    public MeshGenerator meshGenerator;
 
     // Start is called before the first frame update
     void Start()
     {
-        perlinTex = new Texture2D(size, size);
-        material.mainTexture = perlinTex;
-    }
-
-    void Update()
-    {
         Generate();
     }
 
-    void Generate()
+    public void Generate()
     {
+        perlinTex = new Texture2D(size, size);
+        material.mainTexture = perlinTex;
         Color[] map = new Color[size * size];
 
         for (int i = 0; i < size; i++)
@@ -36,7 +34,7 @@ public class mapGenerator : MonoBehaviour
                 float sample = 0;
                 float freq = 1;
                 float amp = 0.7f;
-                float xCoord = (float)i / 10, yCoord = (float)j / 10;
+                float xCoord = (float)i * scale, yCoord = (float)j * scale;
                 for (int k = 0; k < octaves; k++)
                 {
 
@@ -50,5 +48,7 @@ public class mapGenerator : MonoBehaviour
 
         perlinTex.SetPixels(map);
         perlinTex.Apply();
+
+        meshGenerator.Construct(perlinTex);
     }
 }
