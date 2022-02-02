@@ -15,18 +15,6 @@ public class MapGenerator : MonoBehaviour
     Texture2D perlinTex;
     public MeshGenerator meshGenerator;
 
-    IEnumerator Wait()
-    {
-        yield return new WaitForSeconds(0.01f);
-    }
-
-    // Start is called before the first frame update
-    IEnumerator Start()
-    {
-        yield return StartCoroutine("Wait");
-        Generate();
-    }
-
     public Texture2D Generate()
     {
         perlinTex = new Texture2D(size, size);

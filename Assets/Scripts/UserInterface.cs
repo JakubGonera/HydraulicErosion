@@ -23,8 +23,13 @@ public class UserInterface : MonoBehaviour
 
     public RawImage rawImage;
 
+    IEnumerator Wait()
+    {
+        yield return new WaitForSeconds(0.01f);
+    }
+
     // Start is called before the first frame update
-    void Start()
+    IEnumerator Start()
     {
         genButton.onClick.AddListener(delegate
         {
@@ -36,6 +41,10 @@ public class UserInterface : MonoBehaviour
         seedInput.onValueChanged.AddListener(delegate {
             ChangeSeed();
         });
+
+        yield return StartCoroutine("Wait");
+
+        StartErosion();
     }
 
     public void Update()

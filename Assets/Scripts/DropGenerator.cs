@@ -8,7 +8,7 @@ public struct Drop
     {
         pos = _pos;
         dir = _dir;
-        water = 10f;
+        water = 1f;
         sediment = 0;
         vel = 0;
     }
@@ -38,7 +38,8 @@ public class DropGenerator : MonoBehaviour
         for (int i = 0; i < numOfDrops; i++)
         {
             Vector2 startPos = new Vector2(Random.Range(0, mapSize - 1), Random.Range(0, mapSize - 1));
-            Vector2 startDir = new Vector2(1, 1);
+            Vector2 startDir = new Vector2(0,0);
+            startDir.Normalize();
             Drop d = new Drop(startPos, startDir);
             while(d.water > 0.01 && d.isOnMap(mapSize))
             {
@@ -107,13 +108,13 @@ public class DropGenerator : MonoBehaviour
         }
         for (int i = x - radius - 1; i < x + radius + 1; i++)
         {
-            for (int j = y - radius - 1; j < radius + 1; j++)
+            for (int j = y - radius - 1; j < y + radius + 1; j++)
             {
                 if (i >= 0 && j >= 0 && i < size && j < size)
                 {
-                    float oldHeight = heights[y * size + x].grayscale;
-                    float weightedSediment = Mathf.Max(0, radius - (pos - new Vector2(i, j)).magnitude)/sum * amount;
-                    heights[y * size + x] = new Color(oldHeight - weightedSediment, oldHeight - weightedSediment, oldHeight - weightedSediment);
+                    float oldHeight = heights[j * size + i].grayscale;
+                    float weightedSediment = (Mathf.Max(0f, radius - (pos - new Vector2(i, j)).magnitude)/sum) * amount;
+                    heights[j * size + i] = new Color(oldHeight - weightedSediment, oldHeight - weightedSediment, oldHeight - weightedSediment);
                 }
             }
         }

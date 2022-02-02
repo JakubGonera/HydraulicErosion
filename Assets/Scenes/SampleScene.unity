@@ -616,7 +616,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1ebb6c4115ca0c4cae40a1083ccd57b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numOfDrops: 20000
+  numOfDrops: 1000
   inertia: 0.1
   capacity: 3
   gravity: 1
