@@ -15,6 +15,7 @@ public class MeshGenerator : MonoBehaviour
         meshGO = new GameObject("Terrain");
         meshGO.AddComponent<MeshFilter>();
         meshGO.AddComponent<MeshRenderer>().materials = terrainMaterials.ToArray();
+        meshGO.tag = "Terrain";
     }
 
     public void Construct(Texture2D heightMap)
@@ -26,7 +27,9 @@ public class MeshGenerator : MonoBehaviour
         {
             for (int j = 0; j < resolution; j++)
             {
-                verticies.Add(new Vector3(((float)i/resolution) * (float)size, heightMap.GetPixel(i, j).grayscale * size/(10.0f), ((float)j/resolution) * (float)size));
+                verticies.Add(new Vector3(((float)i/resolution) * (float)size, 
+                                            heightMap.GetPixel(i, j).grayscale * size/(7.0f), 
+                                            ((float)j/resolution) * (float)size));
                 if(i != resolution - 1 && j != resolution - 1)
                 {
                     //Triangle 1

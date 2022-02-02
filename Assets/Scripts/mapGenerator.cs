@@ -12,7 +12,6 @@ public class MapGenerator : MonoBehaviour
     public float lacunarity;
     public float scale = 0.1f;
 
-    public RawImage rawImage;
     Texture2D perlinTex;
     public MeshGenerator meshGenerator;
 
@@ -28,10 +27,9 @@ public class MapGenerator : MonoBehaviour
         Generate();
     }
 
-    public void Generate()
+    public Texture2D Generate()
     {
         perlinTex = new Texture2D(size, size);
-        rawImage.texture = perlinTex;
         Color[] map = new Color[size * size];
 
         for (int i = 0; i < size; i++)
@@ -40,13 +38,13 @@ public class MapGenerator : MonoBehaviour
             {
                 float sample = 0;
                 float freq = 1;
-                float amp = 0.7f;
+                float amp = 0.8f;
                 float xCoord = (float)i * scale, yCoord = (float)j * scale;
                 for (int k = 0; k < octaves; k++)
                 {
 
                     sample += Mathf.PerlinNoise((xCoord + seed * (k + 1)) * freq, (yCoord + seed * (k + 1)) * freq) * amp;
-                    freq = freq * lacunarity;
+                    freq *= lacunarity;
                     amp *= persistance;
                 }
                 map[i * size + j] = new Color(sample, sample, sample);
@@ -56,6 +54,6 @@ public class MapGenerator : MonoBehaviour
         perlinTex.SetPixels(map);
         perlinTex.Apply();
 
-        meshGenerator.Construct(perlinTex);
+        return perlinTex;
     }
 }
