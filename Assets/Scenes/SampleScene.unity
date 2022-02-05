@@ -551,7 +551,7 @@ MonoBehaviour:
   octaves: 8
   persistance: 0.4
   lacunarity: 2
-  scale: 0.02
+  scale: 0.011
   meshGenerator: {fileID: 613816556}
 --- !u!4 &613816555
 Transform:
@@ -603,7 +603,6 @@ MonoBehaviour:
   meshGenerator: {fileID: 613816556}
   heightMapGO: {fileID: 348508273}
   terrainMeshGO: {fileID: 0}
-  rawImage: {fileID: 348508275}
 --- !u!114 &613816558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -616,14 +615,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1ebb6c4115ca0c4cae40a1083ccd57b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numOfDrops: 1000
+  numOfDrops: 80000
   inertia: 0.1
   capacity: 3
   gravity: 1
-  evaporation: 0.1
+  evaporation: 0.05
   deposition: 0.1
-  radius: 3
+  radius: 4
   erosion: 0.1
+  dropsPerFrame: 100
+  meshGenerator: {fileID: 613816556}
+  rawImage: {fileID: 348508275}
 --- !u!1 &617118091
 GameObject:
   m_ObjectHideFlags: 0

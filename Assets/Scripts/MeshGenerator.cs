@@ -28,7 +28,7 @@ public class MeshGenerator : MonoBehaviour
             for (int j = 0; j < resolution; j++)
             {
                 verticies.Add(new Vector3(((float)i/resolution) * (float)size, 
-                                            heightMap.GetPixel(i, j).grayscale * size/(7.0f), 
+                                            heightMap.GetPixel(i, j).grayscale * size/(6.0f), 
                                             ((float)j/resolution) * (float)size));
                 if(i != resolution - 1 && j != resolution - 1)
                 {

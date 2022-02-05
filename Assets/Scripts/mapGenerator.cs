@@ -19,7 +19,11 @@ public class MapGenerator : MonoBehaviour
     {
         perlinTex = new Texture2D(size, size);
         Color[] map = new Color[size * size];
+        float[] tempValues = new float[size * size];
 
+
+        float min = 20f, max = -20f;
+        
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)
@@ -35,6 +39,17 @@ public class MapGenerator : MonoBehaviour
                     freq *= lacunarity;
                     amp *= persistance;
                 }
+                tempValues[i * size + j] = sample;
+                min = Mathf.Min(min, sample);
+                max = Mathf.Max(max, sample);
+            }
+        }
+
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                float sample = 0.1f + 0.9f * (tempValues[i * size + j] - min) / (max - min);
                 map[i * size + j] = new Color(sample, sample, sample);
             }
         }

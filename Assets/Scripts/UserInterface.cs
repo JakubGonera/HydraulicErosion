@@ -21,7 +21,6 @@ public class UserInterface : MonoBehaviour
     float fpsCounter = 0;
     float fpsTimer = 0;
 
-    public RawImage rawImage;
 
     IEnumerator Wait()
     {
@@ -80,10 +79,6 @@ public class UserInterface : MonoBehaviour
     public void StartErosion()
     {
         Texture2D tex = mapGenerator.Generate();
-        Texture2D eroded = dropGenerator.StartSimulation(tex);
-
-        rawImage.texture = eroded;
-
-        meshGenerator.Construct(eroded);
+        dropGenerator.StartSimulation(tex);
     }
 }

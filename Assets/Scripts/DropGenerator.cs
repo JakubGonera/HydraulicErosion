@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public struct Drop
 {
@@ -10,7 +11,7 @@ public struct Drop
         dir = _dir;
         water = 1f;
         sediment = 0;
-        vel = 0;
+        vel = 1f;
     }
     public Vector2 pos, dir;
     public float water, sediment, vel;
@@ -31,25 +32,51 @@ public class DropGenerator : MonoBehaviour
     public int radius = 2;
     public float erosion = 0.01f;
 
-    public Texture2D StartSimulation(Texture2D heightMap)
+    public int dropsPerFrame = 10;
+
+    Color[] pixels;
+    int mapSize;
+    Texture2D erodedTex;
+    int dropsSoFar;
+
+    public MeshGenerator meshGenerator;
+    public RawImage rawImage;
+
+    public void Start()
     {
-        Color[] pixels = heightMap.GetPixels();
-        int mapSize = heightMap.width;
-        for (int i = 0; i < numOfDrops; i++)
+        dropsSoFar = numOfDrops;
+    }
+
+    public void StartSimulation(Texture2D heightMap)
+    {
+        pixels = heightMap.GetPixels();
+        mapSize = heightMap.width;
+        erodedTex = new Texture2D(mapSize, mapSize);
+        dropsSoFar = 0;
+        rawImage.texture = erodedTex;
+    }
+
+    public void Update()
+    {
+        if (dropsSoFar < numOfDrops)
         {
-            Vector2 startPos = new Vector2(Random.Range(0, mapSize - 1), Random.Range(0, mapSize - 1));
-            Vector2 startDir = new Vector2(0,0);
-            startDir.Normalize();
-            Drop d = new Drop(startPos, startDir);
-            while(d.water > 0.01 && d.isOnMap(mapSize))
+            for (int i = 0; i < dropsPerFrame && dropsSoFar < numOfDrops; i++)
             {
-                DropStep(ref pixels, ref d, mapSize);
+                Vector2 startPos = new Vector2(Random.Range(0, mapSize - 1), Random.Range(0, mapSize - 1));
+                Vector2 startDir = new Vector2(0, 0);
+                startDir.Normalize();
+                Drop d = new Drop(startPos, startDir);
+                while (d.water > 0.01 && d.isOnMap(mapSize))
+                {
+                    DropStep(ref pixels, ref d, mapSize);
+                }
+                ++dropsSoFar;
             }
+            erodedTex.SetPixels(pixels);
+            erodedTex.Apply();
+
+            meshGenerator.Construct(erodedTex);
         }
-        Texture2D newTex = new Texture2D(mapSize, mapSize);
-        newTex.SetPixels(pixels);
-        newTex.Apply();
-        return newTex;
     }
 
     //bilinear interpolation
