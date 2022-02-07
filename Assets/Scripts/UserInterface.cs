@@ -8,6 +8,14 @@ public class UserInterface : MonoBehaviour
     public Button genButton;
     public Toggle showHeightmapToggle;
     public InputField seedInput;
+
+    public InputField numOfDropsInput;
+    public InputField inertiaInput;
+    public InputField evaporationInput;
+    public InputField depositionInput;
+    public InputField radiusInput;
+    public InputField erosionInput;
+
     public Text fpsText;
 
     public MapGenerator mapGenerator;
@@ -30,6 +38,13 @@ public class UserInterface : MonoBehaviour
     // Start is called before the first frame update
     IEnumerator Start()
     {
+        numOfDropsInput.text = dropGenerator.numOfDrops.ToString();
+        inertiaInput.text = dropGenerator.inertia.ToString();
+        evaporationInput.text = dropGenerator.evaporation.ToString();
+        depositionInput.text = dropGenerator.deposition.ToString();
+        radiusInput.text = dropGenerator.radius.ToString();
+        erosionInput.text = dropGenerator.erosion.ToString();
+
         genButton.onClick.AddListener(delegate
         {
             StartErosion();
@@ -78,6 +93,13 @@ public class UserInterface : MonoBehaviour
 
     public void StartErosion()
     {
+        dropGenerator.numOfDrops = int.Parse(numOfDropsInput.text);
+        dropGenerator.inertia = float.Parse(inertiaInput.text);
+        dropGenerator.evaporation = float.Parse(evaporationInput.text);
+        dropGenerator.deposition = float.Parse(depositionInput.text);
+        dropGenerator.radius = int.Parse(radiusInput.text);
+        dropGenerator.erosion = float.Parse(erosionInput.text);
+
         Texture2D tex = mapGenerator.Generate();
         dropGenerator.StartSimulation(tex);
     }
