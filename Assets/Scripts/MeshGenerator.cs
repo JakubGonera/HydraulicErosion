@@ -9,6 +9,8 @@ public class MeshGenerator : MonoBehaviour
     public int size = 20;
     public float height = 2f;
     public List<Material> terrainMaterials;
+    MeshRenderer meshRenderer;
+    Mesh procMesh;
 
     // Start is called before the first frame update
     void Start()
@@ -17,10 +19,15 @@ public class MeshGenerator : MonoBehaviour
         meshGO.AddComponent<MeshFilter>();
         meshGO.AddComponent<MeshRenderer>().materials = terrainMaterials.ToArray();
         meshGO.tag = "Terrain";
+        meshRenderer = meshGO.GetComponent<MeshRenderer>();
+        procMesh = new Mesh();
+        meshGO.GetComponent<MeshFilter>().mesh = procMesh;
+
     }
 
     public void Construct(Texture2D heightMap)
     {
+        meshGO.transform.position = new Vector3(0, 0, 0);
         resolution = heightMap.width;
         List<int> triangles = new List<int>();
         List<Vector3> verticies = new List<Vector3>();
@@ -52,12 +59,12 @@ public class MeshGenerator : MonoBehaviour
             uvs[i] = new Vector2(verticies[i].x, verticies[i].z);
         }
 
-        Mesh procMesh = new Mesh();
         procMesh.vertices = verticies.ToArray();
         procMesh.uv = uvs;
         procMesh.triangles = triangles.ToArray();
         procMesh.RecalculateNormals();
-        meshGO.GetComponent<MeshFilter>().mesh = procMesh;
+
+        meshGO.transform.position = -meshRenderer.bounds.center;
     }
 
     // Update is called once per frame
