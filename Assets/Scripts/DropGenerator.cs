@@ -37,7 +37,7 @@ public class DropGenerator : MonoBehaviour
     Color[] pixels;
     int mapSize;
     Texture2D erodedTex;
-    int dropsSoFar;
+    public int dropsSoFar;
 
     public MeshGenerator meshGenerator;
     public RawImage rawImage;
@@ -64,7 +64,6 @@ public class DropGenerator : MonoBehaviour
             {
                 Vector2 startPos = new Vector2(Random.Range(0, mapSize - 1), Random.Range(0, mapSize - 1));
                 Vector2 startDir = new Vector2(0, 0);
-                startDir.Normalize();
                 Drop d = new Drop(startPos, startDir);
                 while (d.water > 0.01 && d.isOnMap(mapSize))
                 {
@@ -79,7 +78,6 @@ public class DropGenerator : MonoBehaviour
         }
     }
 
-    //bilinear interpolation
     float InterpolateHeight(Vector2 pos, ref Color[] heights, int size)
     {
         float u, v;
@@ -140,8 +138,11 @@ public class DropGenerator : MonoBehaviour
                 if (i >= 0 && j >= 0 && i < size && j < size)
                 {
                     float oldHeight = heights[j * size + i].grayscale;
-                    float weightedSediment = (Mathf.Max(0f, radius - (pos - new Vector2(i, j)).magnitude)/sum) * amount;
-                    heights[j * size + i] = new Color(oldHeight - weightedSediment, oldHeight - weightedSediment, oldHeight - weightedSediment);
+                    float weightedSediment = 
+                        (Mathf.Max(0f, radius - (pos - new Vector2(i, j)).magnitude)/sum) * amount;
+                    heights[j * size + i] = new Color(oldHeight - weightedSediment, 
+                                                      oldHeight - weightedSediment, 
+                                                      oldHeight - weightedSediment);
                 }
             }
         }
@@ -149,7 +150,7 @@ public class DropGenerator : MonoBehaviour
 
     void DropStep(ref Color[] heights, ref Drop d, int size)
     {
-        //Calculate the position in the cell
+        //calculate position in the cell
         float u, v;
         int x, y;
         u = d.pos.x - Mathf.Floor(d.pos.x);
@@ -157,15 +158,18 @@ public class DropGenerator : MonoBehaviour
         x = (int)Mathf.Floor(d.pos.x);
         y = (int)Mathf.Floor(d.pos.y);
 
+        //calculate the gradient
         Vector2 grad = new Vector2();
         grad.x = (1f - u) * (heights[y * size + x + 1].grayscale - heights[y * size + x].grayscale) 
                 + u * (heights[(y + 1) * size + x + 1].grayscale - heights[(y + 1) * size + x].grayscale);
         grad.y = (1f - v) * (heights[(y + 1) * size + x].grayscale - heights[y * size + x].grayscale) 
                 + v * (heights[(y + 1) * size + x + 1].grayscale - heights[y * size + x + 1].grayscale);
 
+        //new direction
         d.dir = d.dir * inertia - grad * (1 - inertia);
         d.dir.Normalize();
 
+        //calulate new position and get new height
         float hOld = InterpolateHeight(d.pos, ref heights, size);
         Vector2 posOld = d.pos;
         d.pos = d.pos + d.dir;
@@ -175,6 +179,8 @@ public class DropGenerator : MonoBehaviour
         }
         float hNew = InterpolateHeight(d.pos, ref heights, size);
         float hDiff = hNew - hOld;
+
+        //Erode or deposit
         if(hDiff > 0)
         {
             float valDeposited = Mathf.Min(hDiff, d.sediment);

@@ -17,6 +17,7 @@ public class UserInterface : MonoBehaviour
     public InputField erosionInput;
 
     public Text fpsText;
+    public Text dropsText;
 
     public MapGenerator mapGenerator;
     public DropGenerator dropGenerator;
@@ -56,6 +57,25 @@ public class UserInterface : MonoBehaviour
             ChangeSeed();
         });
 
+        numOfDropsInput.onValueChanged.AddListener(delegate {
+            CheckMinus(numOfDropsInput);
+        });
+        inertiaInput.onValueChanged.AddListener(delegate {
+            CheckMinus(inertiaInput);
+        });
+        evaporationInput.onValueChanged.AddListener(delegate {
+            CheckMinus(evaporationInput);
+        });
+        depositionInput.onValueChanged.AddListener(delegate {
+            CheckMinus(depositionInput);
+        });
+        radiusInput.onValueChanged.AddListener(delegate {
+            CheckMinus(radiusInput);
+        });
+        erosionInput.onValueChanged.AddListener(delegate {
+            CheckMinus(erosionInput);
+        });
+
         yield return StartCoroutine("Wait");
 
         StartErosion();
@@ -74,6 +94,28 @@ public class UserInterface : MonoBehaviour
             fpsCounter++;
             fpsTimer += Time.deltaTime;
         }
+        dropsText.text = "Drops so far: " + dropGenerator.dropsSoFar.ToString();
+    }
+
+    public void CheckMinus(InputField inputField)
+    {
+        if(inputField.text.Length != 0 && inputField.text[0] == '-')
+        {
+            inputField.text = inputField.text.Substring(1);
+        }
+    }
+
+    public void StartErosion()
+    {
+        dropGenerator.numOfDrops = int.Parse(numOfDropsInput.text);
+        dropGenerator.inertia = float.Parse(inertiaInput.text.Replace('.', ','));
+        dropGenerator.evaporation = float.Parse(evaporationInput.text.Replace('.', ','));
+        dropGenerator.deposition = float.Parse(depositionInput.text.Replace('.', ','));
+        dropGenerator.radius = int.Parse(radiusInput.text);
+        dropGenerator.erosion = float.Parse(erosionInput.text.Replace('.', ','));
+
+        Texture2D tex = mapGenerator.Generate();
+        dropGenerator.StartSimulation(tex);
     }
 
     public void ChangeSeed()
@@ -91,16 +133,4 @@ public class UserInterface : MonoBehaviour
         terrainMeshGO.SetActive(!toggle.isOn);
     }
 
-    public void StartErosion()
-    {
-        dropGenerator.numOfDrops = int.Parse(numOfDropsInput.text);
-        dropGenerator.inertia = float.Parse(inertiaInput.text);
-        dropGenerator.evaporation = float.Parse(evaporationInput.text);
-        dropGenerator.deposition = float.Parse(depositionInput.text);
-        dropGenerator.radius = int.Parse(radiusInput.text);
-        dropGenerator.erosion = float.Parse(erosionInput.text);
-
-        Texture2D tex = mapGenerator.Generate();
-        dropGenerator.StartSimulation(tex);
-    }
 }
