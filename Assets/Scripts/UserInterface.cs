@@ -46,35 +46,16 @@ public class UserInterface : MonoBehaviour
         radiusInput.text = dropGenerator.radius.ToString();
         erosionInput.text = dropGenerator.erosion.ToString();
 
-        genButton.onClick.AddListener(delegate
-        {
-            StartErosion();
-        });
-        showHeightmapToggle.onValueChanged.AddListener(delegate {
-            ShowHeightmap(showHeightmapToggle);
-        });
-        seedInput.onValueChanged.AddListener(delegate {
-            ChangeSeed();
-        });
+        genButton.onClick.AddListener(delegate{StartErosion();});
+        showHeightmapToggle.onValueChanged.AddListener(delegate {ShowHeightmap(showHeightmapToggle);});
+        seedInput.onValueChanged.AddListener(delegate {ChangeSeed();});
 
-        numOfDropsInput.onValueChanged.AddListener(delegate {
-            CheckMinus(numOfDropsInput);
-        });
-        inertiaInput.onValueChanged.AddListener(delegate {
-            CheckMinus(inertiaInput);
-        });
-        evaporationInput.onValueChanged.AddListener(delegate {
-            CheckMinus(evaporationInput);
-        });
-        depositionInput.onValueChanged.AddListener(delegate {
-            CheckMinus(depositionInput);
-        });
-        radiusInput.onValueChanged.AddListener(delegate {
-            CheckMinus(radiusInput);
-        });
-        erosionInput.onValueChanged.AddListener(delegate {
-            CheckMinus(erosionInput);
-        });
+        numOfDropsInput.onValueChanged.AddListener(delegate {CheckMinus(numOfDropsInput);});
+        inertiaInput.onValueChanged.AddListener(delegate {CheckMinus(inertiaInput);});
+        evaporationInput.onValueChanged.AddListener(delegate {CheckMinus(evaporationInput);});
+        depositionInput.onValueChanged.AddListener(delegate {CheckMinus(depositionInput);});
+        radiusInput.onValueChanged.AddListener(delegate {CheckMinus(radiusInput);});
+        erosionInput.onValueChanged.AddListener(delegate {CheckMinus(erosionInput);});
 
         yield return StartCoroutine("Wait");
 

@@ -1,0 +1,171 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWStructuredBuffer<float> map;
+StructuredBuffer<int> seeds;
+
+uint mapSize;
+
+float inertia;
+float capacity;
+float gravity;
+float evaporation;
+float deposition;
+int radius;
+float erosion;
+
+//Random number generator
+int xorshift(int seed) {
+    seed ^= seed << 13;
+    seed ^= seed >> 17;
+    seed ^= seed << 5;
+    return seed;
+}
+
+struct Drop
+{
+    float2 pos, dir;
+    float water, sediment, vel;
+};
+
+Drop makeDrop(float2 _pos) {
+    Drop drop;
+    drop.pos = _pos;
+    drop.dir = float2(0, 0);
+    drop.water = 1.0;
+    drop.sediment = 0.0;
+    drop.vel = 1.0;
+    return drop;
+}
+
+bool isOnMap(int size, float2 pos)
+{
+    return (pos.x >= 0 && pos.x < (size - 1) && pos.y >= 0 && pos.y < (size - 1));
+}
+
+float interpolateHeight(float2 pos)
+{
+    float u, v;
+    int x, y;
+    u = pos.x - floor(pos.x);
+    v = pos.y - floor(pos.y);
+    x = (int)floor(pos.x);
+    y = (int)floor(pos.y);
+
+    float h11 = map[y * mapSize + x];
+    float h12 = map[(y + 1) * mapSize + x];
+    float h21 = map[y * mapSize + x + 1];
+    float h22 = map[(y + 1) * mapSize + x + 1];
+
+    return h11 * (1.0 - u) * (1.0 - v)
+        + h21 * u * (1.0 - v)
+        + h12 * (1.0 - u) * v
+        + h22 * u * v;
+}
+
+void deposit(float u, float v, int x, int y, float amount)
+{
+    map[y * mapSize + x] += amount * (1.0 - u) * (1.0 - v);
+    map[(y + 1) * mapSize + x] += amount * (1.0 - u) * v;
+    map[y * mapSize + x + 1] += amount* u* (1.0 - v);
+    map[(y + 1) * mapSize + x + 1] += amount * u * v;
+}
+
+void erode(float2 pos, float amount)
+{
+    int x = int(floor(pos.x));
+    int y = int(floor(pos.y));
+    float sum = 0;
+    for (int i = x - radius - 1; i < x + radius + 1; i++)
+    {
+        for (int j = y - radius - 1; j < y + radius + 1; j++)
+        {
+            if (i >= 0 && j >= 0 && i < (int)mapSize && j < (int)mapSize)
+            {
+                sum += max(0, radius - length(pos - float2(i, j)));
+            }
+        }
+    }
+    for (int i = x - radius - 1; i < x + radius + 1; i++)
+    {
+        for (int j = y - radius - 1; j < y + radius + 1; j++)
+        {
+            if (i >= 0 && j >= 0 && i < (int)mapSize && j < (int)mapSize)
+            {
+                float oldHeight = map[j * mapSize + i];
+                float weightedSediment =
+                    (max(0.0, radius - length(pos - float2(i, j))) / sum) * amount;
+                map[j * mapSize + i] = oldHeight - weightedSediment;
+            }
+        }
+    }
+}
+
+[numthreads(1,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    /*int seed = seeds[id.x];
+    float posX = xorshift(xorshift(seed)) % mapSize;
+    float posY = xorshift(seed) % mapSize;*/
+
+    Drop d = makeDrop(float2(seeds[id.x * 2], seeds[id.x * 2 + 1]));
+    while (d.water > 0.01 && isOnMap(mapSize, d.pos)) {
+        //calculate position in the cell
+        float u, v;
+        int x, y;
+        u = d.pos.x - floor(d.pos.x);
+        v = d.pos.y - floor(d.pos.y);
+        x = int(floor(d.pos.x));
+        y = int(floor(d.pos.y));
+
+        //calculate the gradient
+        float2 grad = float2(0,0);
+        grad.x = (1.0 - u) * (map[y * mapSize + x + 1] - map[y * mapSize + x])
+            + u * (map[(y + 1) * mapSize + x + 1] - map[(y + 1) * mapSize + x]);
+        grad.y = (1.0 - v) * (map[(y + 1) * mapSize + x] - map[y * mapSize + x])
+            + v * (map[(y + 1) * mapSize + x + 1] - map[y * mapSize + x + 1]);
+
+        //new direction
+        d.dir = d.dir * inertia - grad * (1.0 - inertia);
+        d.dir = normalize(d.dir);
+
+        //calculate new position and get new height
+        float hOld = interpolateHeight(d.pos);
+        float2 posOld = d.pos;
+        d.pos = d.pos + d.dir;
+        if (!isOnMap(mapSize, d.pos))
+        {
+            break;
+        }
+        float hNew = interpolateHeight(d.pos);
+        float hDiff = hNew - hOld;
+
+        //Erode or deposit
+        if (hDiff > 0.0)
+        {
+            float valDeposited = min(hDiff, d.sediment);
+            deposit(u, v, x, y, valDeposited);
+            d.sediment -= valDeposited;
+        }
+        else
+        {
+            float c = (-hDiff) * d.vel * d.water * capacity;
+            if (c < d.sediment)
+            {
+                float valDeposited = (d.sediment - c) * deposition;
+                deposit(u, v, x, y, valDeposited);
+                d.sediment -= valDeposited;
+            }
+            else
+            {
+                float valEroded = min((c - d.sediment) * erosion, -hDiff);
+                erode(posOld, valEroded);
+                d.sediment += valEroded;
+            }
+        }
+        d.vel = sqrt(d.vel * d.vel + hDiff * gravity);
+        d.water = d.water * (1 - evaporation);
+    }
+}

@@ -32,9 +32,10 @@ public class DropGenerator : MonoBehaviour
     public int radius = 2;
     public float erosion = 0.01f;
 
-    public int dropsPerFrame = 10;
+    public int dropsPerFrame = 1024;
 
     Color[] pixels;
+    float[] map;
     int mapSize;
     Texture2D erodedTex;
     public int dropsSoFar;
@@ -42,14 +43,56 @@ public class DropGenerator : MonoBehaviour
     public MeshGenerator meshGenerator;
     public RawImage rawImage;
 
+    public ComputeShader erosionShader;
+    int kernelID;
+    int groupNumber = 1;
+
     public void Start()
     {
         dropsSoFar = numOfDrops;
+        kernelID = erosionShader.FindKernel("CSMain");
     }
+
+    //Texture2D ShaderTest(Color[] heightMap, int mapSize)
+    //{
+    //    float[] map = new float[heightMap.Length];
+
+    //    for (int i = 0; i < heightMap.Length; i++)
+    //    {
+    //        map[i] = heightMap[i].grayscale;
+    //    }
+
+    //    ComputeBuffer mapBuffer = new ComputeBuffer(map.Length, sizeof(float));
+    //    mapBuffer.SetData(map);
+    //    erosionShader.SetBuffer(kernelID, "map", mapBuffer);
+
+    //    erosionShader.SetInt("mapSize", map.Length);
+
+    //    erosionShader.Dispatch(kernelID, 1, 1, 1);
+    //    mapBuffer.GetData(map);
+
+    //    mapBuffer.Release();
+
+    //    Texture2D tex = new Texture2D(mapSize, mapSize);
+    //    for (int i = 0; i < heightMap.Length; i++)
+    //    {
+    //        heightMap[i] = new Color(map[i], map[i], map[i]);
+    //    }
+    //    tex.SetPixels(heightMap);
+    //    tex.Apply();
+    //    return tex;
+    //}
 
     public void StartSimulation(Texture2D heightMap)
     {
         pixels = heightMap.GetPixels();
+        map = new float[pixels.Length];
+
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            map[i] = pixels[i].grayscale;
+        }
+
         mapSize = heightMap.width;
         erodedTex = new Texture2D(mapSize, mapSize);
         dropsSoFar = 0;
@@ -60,21 +103,66 @@ public class DropGenerator : MonoBehaviour
     {
         if (dropsSoFar < numOfDrops)
         {
-            for (int i = 0; i < dropsPerFrame && dropsSoFar < numOfDrops; i++)
+            int numThreads = dropsPerFrame / groupNumber;
+
+            //Pass the heightmap
+            ComputeBuffer mapBuffer = new ComputeBuffer(map.Length, sizeof(float));
+            mapBuffer.SetData(map);
+            erosionShader.SetBuffer(kernelID, "map", mapBuffer);
+
+            //Pass random positions for the droplets
+            List<int> seeds = new List<int>();
+            for (int i = 0; i < numThreads * groupNumber; i++)
             {
-                Vector2 startPos = new Vector2(Random.Range(0, mapSize - 1), Random.Range(0, mapSize - 1));
-                Vector2 startDir = new Vector2(0, 0);
-                Drop d = new Drop(startPos, startDir);
-                while (d.water > 0.01 && d.isOnMap(mapSize))
-                {
-                    DropStep(ref pixels, ref d, mapSize);
-                }
-                ++dropsSoFar;
+                seeds.Add(Random.Range(0, mapSize - 1));
+                seeds.Add(Random.Range(0, mapSize - 1));
+            }
+
+            ComputeBuffer seedsBuffer = new ComputeBuffer(seeds.Count, sizeof(int));
+            seedsBuffer.SetData(seeds);
+            erosionShader.SetBuffer(kernelID, "seeds", seedsBuffer);
+
+            //Set parameters
+            erosionShader.SetInt("mapSize", mapSize);
+            erosionShader.SetInt("radius", radius);
+            erosionShader.SetFloat("inertia", inertia);
+            erosionShader.SetFloat("capacity", capacity);
+            erosionShader.SetFloat("gravity", gravity);
+            erosionShader.SetFloat("evaporation", evaporation);
+            erosionShader.SetFloat("deposition", deposition);
+            erosionShader.SetFloat("erosion", erosion);
+
+            erosionShader.Dispatch(kernelID, numThreads, 1, 1);
+
+            mapBuffer.GetData(map);
+
+            mapBuffer.Release();
+            seedsBuffer.Release();
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(map[i], map[i], map[i]);
             }
             erodedTex.SetPixels(pixels);
             erodedTex.Apply();
 
             meshGenerator.Construct(erodedTex);
+            dropsSoFar += numThreads * groupNumber;
+
+            //for (int i = 0; i < dropsPerFrame && dropsSoFar < numOfDrops; i++)
+            //{
+            //    Vector2 startPos = new Vector2(Random.Range(0, mapSize - 1), Random.Range(0, mapSize - 1));
+            //    Vector2 startDir = new Vector2(0, 0);
+            //    Drop d = new Drop(startPos, startDir);
+            //    while (d.water > 0.01 && d.isOnMap(mapSize))
+            //    {
+            //        DropStep(ref pixels, ref d, mapSize);
+            //    }
+            //    ++dropsSoFar;
+            //}
+            //erodedTex.SetPixels(pixels);
+            //erodedTex.Apply();
+            //meshGenerator.Construct(erodedTex);
         }
     }
 
@@ -169,7 +257,7 @@ public class DropGenerator : MonoBehaviour
         d.dir = d.dir * inertia - grad * (1 - inertia);
         d.dir.Normalize();
 
-        //calulate new position and get new height
+        //calculate new position and get new height
         float hOld = InterpolateHeight(d.pos, ref heights, size);
         Vector2 posOld = d.pos;
         d.pos = d.pos + d.dir;

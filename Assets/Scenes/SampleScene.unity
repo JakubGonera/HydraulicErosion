@@ -1320,7 +1320,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1ebb6c4115ca0c4cae40a1083ccd57b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numOfDrops: 10
+  numOfDrops: 100000
   inertia: 0.4
   capacity: 4
   gravity: 1
@@ -1328,10 +1328,11 @@ MonoBehaviour:
   deposition: 0.1
   radius: 3
   erosion: 0.1
-  dropsPerFrame: 200
+  dropsPerFrame: 100
   dropsSoFar: 0
   meshGenerator: {fileID: 613816556}
   rawImage: {fileID: 348508275}
+  erosionShader: {fileID: 7200000, guid: c26882e1930c84546bdd32c0d0ca13f7, type: 3}
 --- !u!1 &617118091
 GameObject:
   m_ObjectHideFlags: 0
@@ -2478,7 +2479,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66a28a92b193b6f479d7a6d745de102c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationSpeed: 0.2
+  rotationSpeed: 0.1
   radius: 2000
   height: 1000
 --- !u!1 &1067769474
