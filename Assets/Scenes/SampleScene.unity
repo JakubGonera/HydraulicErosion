@@ -1280,6 +1280,7 @@ MonoBehaviour:
   height: 3
   terrainMaterials:
   - {fileID: 2100000, guid: e05f10ea6ccc9094998f69d0b90423ff, type: 2}
+  resolution: 256
 --- !u!114 &613816557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1320,7 +1321,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1ebb6c4115ca0c4cae40a1083ccd57b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numOfDrops: 100000
+  numOfDrops: 1
   inertia: 0.4
   capacity: 4
   gravity: 1
@@ -1328,11 +1329,13 @@ MonoBehaviour:
   deposition: 0.1
   radius: 3
   erosion: 0.1
-  dropsPerFrame: 100
+  dropsPerFrame: 3000
   dropsSoFar: 0
   meshGenerator: {fileID: 613816556}
   rawImage: {fileID: 348508275}
   erosionShader: {fileID: 7200000, guid: c26882e1930c84546bdd32c0d0ca13f7, type: 3}
+  terrainShader: {fileID: 4800000, guid: 32ba45959531f5347aeffad8b4f999bc, type: 3}
+  terrainMaterial: {fileID: 2100000, guid: e05f10ea6ccc9094998f69d0b90423ff, type: 2}
 --- !u!1 &617118091
 GameObject:
   m_ObjectHideFlags: 0
@@ -2480,8 +2483,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 0.1
-  radius: 2000
-  height: 1000
+  radius: 200
+  height: 200
+  focusHeight: 50
 --- !u!1 &1067769474
 GameObject:
   m_ObjectHideFlags: 0
@@ -3838,7 +3842,7 @@ Light:
   m_Cookie: {fileID: 0}
   m_DrawHalo: 0
   m_Flare: {fileID: 0}
-  m_RenderMode: 0
+  m_RenderMode: 1
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
