@@ -3,24 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public struct Drop
-{
-    public Drop(Vector2 _pos, Vector2 _dir)
-    {
-        pos = _pos;
-        dir = _dir;
-        water = 1f;
-        sediment = 0;
-        vel = 1f;
-    }
-    public Vector2 pos, dir;
-    public float water, sediment, vel;
-    public bool isOnMap(int size)
-    {
-        return (pos.x >= 0 && pos.x < (size - 1) && pos.y >= 0 && pos.y < (size - 1));
-    }
-}
-
 public class DropGenerator : MonoBehaviour
 {
     public int numOfDrops = 1000;
@@ -101,7 +83,6 @@ public class DropGenerator : MonoBehaviour
                 seeds.Add(Random.Range(0, mapSize - 1));
             }
 
-            //moze nie ustawiac tego co pass?
             ComputeBuffer seedsBuffer = new ComputeBuffer(seeds.Count, sizeof(int));
             seedsBuffer.SetData(seeds);
             erosionShader.SetBuffer(kernelID, "seeds", seedsBuffer);
@@ -129,8 +110,12 @@ public class DropGenerator : MonoBehaviour
             erodedTex.SetPixels(pixels);
             erodedTex.Apply();
 
-            meshGenerator.Construct(erodedTex);
             dropsSoFar += numThreads * groupNumber;
         }
+    }
+
+    void OnDestroy()
+    {
+        mapBuffer.Release();
     }
 }

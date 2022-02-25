@@ -7,6 +7,7 @@ Shader "Custom/TerrainShader"
         _MaxSlope("Max slope", Range(0, 1)) = 0.4
         _Height("Height", Range(1, 50)) = 10
         _Size("Size of map", Int) = 256
+        _Margin("Size of margin", Int) = 10
         _HeightMult("Height multiplier", Range(10, 300)) = 100
     }
     SubShader
@@ -34,6 +35,7 @@ Shader "Custom/TerrainShader"
         fixed4 _Debug;
         float _MaxSlope;
         int _Size;
+        int _Margin;
         float _HeightMult;
 
         #ifdef SHADER_API_D3D11
@@ -41,7 +43,8 @@ Shader "Custom/TerrainShader"
         
         float getVal(int x, int y, float def) {
             if (x >= 0 && x < _Size && y >= 0 && y < _Size) {
-                return _Map[y * _Size + x];
+                return _Map[(y + _Margin) * (_Size + 2 * _Margin) + x + _Margin];
+                //return _Map[(y) * (_Size) + x ];
             }
             else {
                 return def;
@@ -53,8 +56,8 @@ Shader "Custom/TerrainShader"
             #ifdef SHADER_API_D3D11
             int x = (int)v.vertex.x;
             int y = (int)v.vertex.z;
-            float height = _Map[(int)v.vertex.z * _Size + (int)v.vertex.x];
-            v.vertex.xyz = float3(v.vertex.x, height * _HeightMult, v.vertex.z);
+            float height = _Map[(y + _Margin) * (_Size + _Margin * 2) + x + _Margin];
+            v.vertex.xyz = float3(x, height * _HeightMult, y);
                 
             // sample the height map:
             float fx0 = getVal(x - 1, y, height) * _HeightMult, fx1 = getVal(x + 1, y, height) * _HeightMult;

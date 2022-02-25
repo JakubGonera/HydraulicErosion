@@ -70,46 +70,4 @@ public class MeshGenerator : MonoBehaviour
 
         meshGO.transform.position = -meshRenderer.bounds.center;
     }
-
-    public void Construct(Texture2D heightMap)
-    {
-        //meshGO.transform.position = new Vector3(0, 0, 0);
-        ////int[] triangles = new int[(resolution - 1) * (resolution - 1) * 2 * 3];
-        ////Vector3[] verticies = new Vector3[resolution * resolution];
-        ////int triangleCounter = 0;
-        //for (int i = 0; i < resolution; i++)
-        //{
-        //    for (int j = 0; j < resolution; j++)
-        //    {
-        //        vertices[i * resolution + j] = new Vector3(((float)i / resolution) * (float)size, 
-        //            heightMap.GetPixel(i, j).grayscale * size * height / (10.0f), 
-        //            ((float)j / resolution) * (float)size);
-        //        //if(i != resolution - 1 && j != resolution - 1)
-        //        //{
-        //        //    //Triangle 1
-        //        //    procMesh.triangles[triangleCounter] = resolution * i + j;
-        //        //    procMesh.triangles[triangleCounter + 1] = resolution * i + j + 1;
-        //        //    procMesh.triangles[triangleCounter + 2] = resolution * (i + 1) + j + 1;
-
-        //        //    //Triangle 2
-        //        //    procMesh.triangles[triangleCounter + 3] = resolution * i + j;
-        //        //    procMesh.triangles[triangleCounter + 4] = resolution * (i + 1) + j + 1;
-        //        //    procMesh.triangles[triangleCounter + 5] = resolution * (i + 1) + j;
-        //        //    triangleCounter += 6;
-        //        //}
-        //    }
-        //}
-
-        //procMesh.vertices = vertices;
-        //procMesh.RecalculateBounds();
-        //procMesh.RecalculateNormals();
-
-        //meshGO.transform.position = -meshRenderer.bounds.center;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
