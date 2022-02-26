@@ -58,7 +58,7 @@ Material:
     m_Floats:
     - _BlendRange: 0.089
     - _BumpScale: 1
-    - _ComparisonRatio: 0
+    - _ComparisonRatio: 0.98240423
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0

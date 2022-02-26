@@ -7,8 +7,8 @@ public class UserInterface : MonoBehaviour
 {
     public Button genButton;
     public Toggle showHeightmapToggle;
-    public InputField seedInput;
 
+    public InputField seedInput;
     public InputField numOfDropsInput;
     public InputField inertiaInput;
     public InputField evaporationInput;
@@ -18,6 +18,8 @@ public class UserInterface : MonoBehaviour
 
     public Text fpsText;
     public Text dropsText;
+
+    public Slider comparisonSlider;
 
     public MapGenerator mapGenerator;
     public DropGenerator dropGenerator;
@@ -30,6 +32,7 @@ public class UserInterface : MonoBehaviour
     float fpsCounter = 0;
     float fpsTimer = 0;
 
+    public Material terrainMaterial;
 
     IEnumerator Wait()
     {
@@ -39,7 +42,10 @@ public class UserInterface : MonoBehaviour
     // Start is called before the first frame update
     IEnumerator Start()
     {
-        numOfDropsInput.text = dropGenerator.numOfDrops.ToString();
+        terrainMaterial.SetFloat("_ComparisonRatio", 0f);
+
+
+       numOfDropsInput.text = dropGenerator.numOfDrops.ToString();
         inertiaInput.text = dropGenerator.inertia.ToString();
         evaporationInput.text = dropGenerator.evaporation.ToString();
         depositionInput.text = dropGenerator.deposition.ToString();
@@ -49,6 +55,7 @@ public class UserInterface : MonoBehaviour
         genButton.onClick.AddListener(delegate{StartErosion();});
         showHeightmapToggle.onValueChanged.AddListener(delegate {ShowHeightmap(showHeightmapToggle);});
         seedInput.onValueChanged.AddListener(delegate {ChangeSeed();});
+        comparisonSlider.onValueChanged.AddListener(delegate { ChangeComp(); });
 
         numOfDropsInput.onValueChanged.AddListener(delegate {CheckMinus(numOfDropsInput);});
         inertiaInput.onValueChanged.AddListener(delegate {CheckMinus(inertiaInput);});
@@ -97,6 +104,11 @@ public class UserInterface : MonoBehaviour
 
         Texture2D tex = mapGenerator.Generate();
         dropGenerator.StartSimulation(tex);
+    }
+
+    public void ChangeComp()
+    {
+        terrainMaterial.SetFloat("_ComparisonRatio", comparisonSlider.value);
     }
 
     public void ChangeSeed()
