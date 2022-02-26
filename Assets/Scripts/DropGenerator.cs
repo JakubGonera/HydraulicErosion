@@ -29,6 +29,7 @@ public class DropGenerator : MonoBehaviour
     public Shader terrainShader;
     public Material terrainMaterial; 
     ComputeBuffer mapBuffer;
+    ComputeBuffer originalMapBuffer;
     bool bufferInstantiated = false;
 
     int kernelID;
@@ -56,14 +57,20 @@ public class DropGenerator : MonoBehaviour
         rawImage.texture = erodedTex;
 
         if (bufferInstantiated)
+        {
             mapBuffer.Release();
+            originalMapBuffer.Release();
+        }
         else
             bufferInstantiated = true;
 
         mapBuffer = new ComputeBuffer(map.Length, sizeof(float));
+        originalMapBuffer = new ComputeBuffer(map.Length, sizeof(float));
         mapBuffer.SetData(map);
+        originalMapBuffer.SetData(map);
 
         terrainMaterial.SetBuffer("_Map", mapBuffer);
+        terrainMaterial.SetBuffer("_OriginalMap", originalMapBuffer);
     }
 
     public void Update()
@@ -117,5 +124,6 @@ public class DropGenerator : MonoBehaviour
     void OnDestroy()
     {
         mapBuffer.Release();
+        originalMapBuffer.Release();
     }
 }

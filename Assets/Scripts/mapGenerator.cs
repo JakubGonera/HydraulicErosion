@@ -35,7 +35,7 @@ public class MapGenerator : MonoBehaviour
                 for (int k = 0; k < octaves; k++)
                 {
 
-                    sample += Mathf.PerlinNoise((xCoord + seed * (k + 1)) * freq, (yCoord + seed * (k + 1)) * freq) * amp;
+                    sample += Mathf.PerlinNoise((xCoord + (seed/100) * (k + 1)) * freq, (yCoord + (seed/100) * (k + 1)) * freq) * amp;
                     freq *= lacunarity;
                     amp *= persistance;
                 }

@@ -1243,12 +1243,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a244e6a1d88a8f4c9d0d633586a8a36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 256
+  size: 276
   seed: 0
   octaves: 8
   persistance: 0.4
   lacunarity: 2
-  scale: 0.005
+  scale: 0.00512
   meshGenerator: {fileID: 613816556}
 --- !u!4 &613816555
 Transform:
