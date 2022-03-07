@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class UserInterface : MonoBehaviour
 {
+    //Variables for linking all UI elements with code
     public Button genButton;
     public Toggle showHeightmapToggle;
 
@@ -21,17 +22,21 @@ public class UserInterface : MonoBehaviour
 
     public Slider comparisonSlider;
 
+    //Other classes that need to be called or altered by the UI
     public MapGenerator mapGenerator;
     public DropGenerator dropGenerator;
     public MeshGenerator meshGenerator;
 
+    //Heightmap texture GameObject and terrain GameObject
     public GameObject heightMapGO;
     public GameObject terrainMeshGO;
 
+    //Variables used for calculating the FPS
     float fpsRefreshInterval = 0.25f;
     float fpsCounter = 0;
     float fpsTimer = 0;
 
+    //Material for changing the comparison ratio value
     public Material terrainMaterial;
 
     IEnumerator Wait()
@@ -44,14 +49,15 @@ public class UserInterface : MonoBehaviour
     {
         terrainMaterial.SetFloat("_ComparisonRatio", 0f);
 
-
-       numOfDropsInput.text = dropGenerator.numOfDrops.ToString();
+        //Load input fields with current values
+        numOfDropsInput.text = dropGenerator.numOfDrops.ToString();
         inertiaInput.text = dropGenerator.inertia.ToString();
         evaporationInput.text = dropGenerator.evaporation.ToString();
         depositionInput.text = dropGenerator.deposition.ToString();
         radiusInput.text = dropGenerator.radius.ToString();
         erosionInput.text = dropGenerator.erosion.ToString();
 
+        //Add callback functions for all UI elements
         genButton.onClick.AddListener(delegate{StartErosion();});
         showHeightmapToggle.onValueChanged.AddListener(delegate {ShowHeightmap(showHeightmapToggle);});
         seedInput.onValueChanged.AddListener(delegate {ChangeSeed();});
@@ -64,6 +70,7 @@ public class UserInterface : MonoBehaviour
         radiusInput.onValueChanged.AddListener(delegate {CheckMinus(radiusInput);});
         erosionInput.onValueChanged.AddListener(delegate {CheckMinus(erosionInput);});
 
+        //Wait so that the terrain mesh is constructed and there is no conflict with erosion starting when terrain is nonexistent
         yield return StartCoroutine("Wait");
 
         StartErosion();
@@ -71,6 +78,7 @@ public class UserInterface : MonoBehaviour
 
     public void Update()
     {
+        //Calculate FPS every fpsRefreshInterval seconds
         if(fpsTimer > fpsRefreshInterval)
         {
             fpsText.text = "FPS: " + fpsCounter / fpsRefreshInterval;
@@ -85,6 +93,7 @@ public class UserInterface : MonoBehaviour
         dropsText.text = "Drops so far: " + dropGenerator.dropsSoFar.ToString();
     }
 
+    //Method for making sure no negative number is being passed as parameter
     public void CheckMinus(InputField inputField)
     {
         if(inputField.text.Length != 0 && inputField.text[0] == '-')
@@ -95,6 +104,7 @@ public class UserInterface : MonoBehaviour
 
     public void StartErosion()
     {
+        //Update the generator with the values from input fields
         dropGenerator.numOfDrops = int.Parse(numOfDropsInput.text);
         dropGenerator.inertia = float.Parse(inertiaInput.text.Replace('.', ','));
         dropGenerator.evaporation = float.Parse(evaporationInput.text.Replace('.', ','));
@@ -106,16 +116,19 @@ public class UserInterface : MonoBehaviour
         dropGenerator.StartSimulation(tex);
     }
 
+    //Update shader property on slider change
     public void ChangeComp()
     {
         terrainMaterial.SetFloat("_ComparisonRatio", comparisonSlider.value);
     }
 
+    //Update seed on input field change
     public void ChangeSeed()
     {
         mapGenerator.seed = int.Parse(seedInput.text);
     }
 
+    //Enable or disable the heightmap or terrain based on toggle
     public void ShowHeightmap(Toggle toggle)
     {
         heightMapGO.SetActive(toggle.isOn);

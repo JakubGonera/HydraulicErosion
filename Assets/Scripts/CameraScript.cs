@@ -12,10 +12,12 @@ public class CameraScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //Use parametric equation of a circle to move the camera in a circle
         float x = radius * Mathf.Cos(Time.time * rotationSpeed);
         float z = radius * Mathf.Sin(Time.time * rotationSpeed);
         transform.position = new Vector3(x, height, z);
 
+        //Rotate the camera so it looks at the center
         transform.LookAt(new Vector3(0, focusHeight, 0));
     }
 }

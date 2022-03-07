@@ -10,13 +10,14 @@ public class MeshGenerator : MonoBehaviour
     public List<Material> terrainMaterials;
     MeshRenderer meshRenderer;
     Mesh procMesh;
-    public int resolution = 256;//Make it automatic
+    public int resolution = 256;
     Vector3[] vertices;
 
 
     // Start is called before the first frame update
     void Start()
     {
+        //Create new GameObject with components needed for rendering mesh
         meshGO = new GameObject("Terrain");
         meshGO.AddComponent<MeshFilter>();
         meshGO.AddComponent<MeshRenderer>().materials = terrainMaterials.ToArray();
@@ -26,6 +27,7 @@ public class MeshGenerator : MonoBehaviour
         procMesh.MarkDynamic();
         meshGO.GetComponent<MeshFilter>().mesh = procMesh;
 
+        //Generate a plane
         vertices = new Vector3[resolution * resolution];
         int[] triangles = new int[(resolution - 1) * (resolution - 1) * 2 * 3];
         int triangleCounter = 0;
@@ -57,15 +59,12 @@ public class MeshGenerator : MonoBehaviour
             }
         }
 
-        Vector2[] uvs = new Vector2[vertices.Length];
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
-        }
+        //Assign the generated data to the object
         procMesh.vertices = vertices;
-        procMesh.uv = uvs;
         procMesh.triangles = triangles;
         procMesh.RecalculateNormals();
+        
+        //Calculate the bounds of the mesh and center the object so the middle point is at (0,0,0)
         procMesh.RecalculateBounds();
 
         meshGO.transform.position = -meshRenderer.bounds.center;

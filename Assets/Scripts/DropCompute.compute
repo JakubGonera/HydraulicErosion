@@ -1,11 +1,11 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
+//heightmap buffer and random positions buffer
 RWStructuredBuffer<float> map;
-StructuredBuffer<int> seeds;
+StructuredBuffer<int> positions;
 
+//simulation parameters
 uint mapSize;
 
 float inertia;
@@ -16,20 +16,14 @@ float deposition;
 int radius;
 float erosion;
 
-//Random number generator
-int xorshift(int seed) {
-    seed ^= seed << 13;
-    seed ^= seed >> 17;
-    seed ^= seed << 5;
-    return seed;
-}
-
+//struct representing a single drop
 struct Drop
 {
     float2 pos, dir;
     float water, sediment, vel;
 };
 
+//constructor for the struct
 Drop makeDrop(float2 _pos) {
     Drop drop;
     drop.pos = _pos;
@@ -40,11 +34,13 @@ Drop makeDrop(float2 _pos) {
     return drop;
 }
 
+//Check whether drop is still on map
 bool isOnMap(int size, float2 pos)
 {
     return (pos.x >= 0 && pos.x < (size - 1) && pos.y >= 0 && pos.y < (size - 1));
 }
 
+//Interpolate the height from 4 corners according to pos
 float interpolateHeight(float2 pos)
 {
     float u, v;
@@ -65,6 +61,7 @@ float interpolateHeight(float2 pos)
         + h22 * u * v;
 }
 
+//deposit amount at the coordinates (x + u, y + v)
 void deposit(float u, float v, int x, int y, float amount)
 {
     map[y * mapSize + x] += amount * (1.0 - u) * (1.0 - v);
@@ -73,11 +70,14 @@ void deposit(float u, float v, int x, int y, float amount)
     map[(y + 1) * mapSize + x + 1] += amount * u * v;
 }
 
+//erode amount from pos
 void erode(float2 pos, float amount)
 {
     int x = int(floor(pos.x));
     int y = int(floor(pos.y));
     float sum = 0;
+
+    //Sum all weights of cells
     for (int i = x - radius - 1; i < x + radius + 1; i++)
     {
         for (int j = y - radius - 1; j < y + radius + 1; j++)
@@ -94,6 +94,7 @@ void erode(float2 pos, float amount)
         {
             if (i >= 0 && j >= 0 && i < (int)mapSize && j < (int)mapSize)
             {
+                //Deposit sediment at cell in proportion to weight/sum
                 float oldHeight = map[j * mapSize + i];
                 float weightedSediment =
                     (max(0.0, radius - length(pos - float2(i, j))) / sum) * amount;
@@ -103,14 +104,12 @@ void erode(float2 pos, float amount)
     }
 }
 
-[numthreads(1,1,1)]
+//Thread group of size 64, optimal for AMD and NVidia GPUs
+[numthreads(64,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    /*int seed = seeds[id.x];
-    float posX = xorshift(xorshift(seed)) % mapSize;
-    float posY = xorshift(seed) % mapSize;*/
-
-    Drop d = makeDrop(float2(seeds[id.x * 2], seeds[id.x * 2 + 1]));
+    //Instantiate a drop at random position from buffer
+    Drop d = makeDrop(float2(positions[id.x * 2], positions[id.x * 2 + 1]));
     while (d.water > 0.01 && isOnMap(mapSize, d.pos)) {
         //calculate position in the cell
         float u, v;
@@ -145,26 +144,31 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         //Erode or deposit
         if (hDiff > 0.0)
         {
+            //Going uphill - deposit
             float valDeposited = min(hDiff, d.sediment);
             deposit(u, v, x, y, valDeposited);
             d.sediment -= valDeposited;
         }
         else
         {
+            //Calculate new carrying capacity
             float c = (-hDiff) * d.vel * d.water * capacity;
             if (c < d.sediment)
             {
+                //Capacity too small - deposit
                 float valDeposited = (d.sediment - c) * deposition;
                 deposit(u, v, x, y, valDeposited);
                 d.sediment -= valDeposited;
             }
             else
             {
+                //Capacity bigger than sediment carried - erode
                 float valEroded = min((c - d.sediment) * erosion, -hDiff);
                 erode(posOld, valEroded);
                 d.sediment += valEroded;
             }
         }
+        //Calculate new water amount and new speed
         d.vel = sqrt(d.vel * d.vel + hDiff * gravity);
         d.water = d.water * (1 - evaporation);
     }
