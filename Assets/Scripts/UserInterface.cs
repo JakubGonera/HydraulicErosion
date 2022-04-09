@@ -60,7 +60,7 @@ public class UserInterface : MonoBehaviour
         //Add callback functions for all UI elements
         genButton.onClick.AddListener(delegate{StartErosion();});
         showHeightmapToggle.onValueChanged.AddListener(delegate {ShowHeightmap(showHeightmapToggle);});
-        seedInput.onValueChanged.AddListener(delegate {ChangeSeed();});
+        seedInput.onValueChanged.AddListener(delegate { CheckMinus(seedInput); });
         comparisonSlider.onValueChanged.AddListener(delegate { ChangeComp(); });
 
         numOfDropsInput.onValueChanged.AddListener(delegate {CheckMinus(numOfDropsInput);});
@@ -102,15 +102,26 @@ public class UserInterface : MonoBehaviour
         }
     }
 
+    string CheckForNull(string s)
+    {
+        if(s == "")
+        {
+            return "0";
+        }
+        return s;
+    }
+
     public void StartErosion()
     {
         //Update the generator with the values from input fields
-        dropGenerator.numOfDrops = int.Parse(numOfDropsInput.text);
-        dropGenerator.inertia = float.Parse(inertiaInput.text.Replace('.', ','));
-        dropGenerator.evaporation = float.Parse(evaporationInput.text.Replace('.', ','));
-        dropGenerator.deposition = float.Parse(depositionInput.text.Replace('.', ','));
-        dropGenerator.radius = int.Parse(radiusInput.text);
-        dropGenerator.erosion = float.Parse(erosionInput.text.Replace('.', ','));
+        dropGenerator.numOfDrops = int.Parse(CheckForNull(numOfDropsInput.text));
+        dropGenerator.inertia = float.Parse(CheckForNull(inertiaInput.text.Replace('.', ',')));
+        dropGenerator.evaporation = float.Parse(CheckForNull(evaporationInput.text.Replace('.', ',')));
+        dropGenerator.deposition = float.Parse(CheckForNull(depositionInput.text.Replace('.', ',')));
+        dropGenerator.radius = int.Parse(CheckForNull(radiusInput.text));
+        dropGenerator.erosion = float.Parse(CheckForNull(erosionInput.text.Replace('.', ',')));
+
+        mapGenerator.seed = int.Parse(CheckForNull(seedInput.text));
 
         Texture2D tex = mapGenerator.Generate();
         dropGenerator.StartSimulation(tex);
@@ -120,12 +131,6 @@ public class UserInterface : MonoBehaviour
     public void ChangeComp()
     {
         terrainMaterial.SetFloat("_ComparisonRatio", comparisonSlider.value);
-    }
-
-    //Update seed on input field change
-    public void ChangeSeed()
-    {
-        mapGenerator.seed = int.Parse(seedInput.text);
     }
 
     //Enable or disable the heightmap or terrain based on toggle

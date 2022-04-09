@@ -1405,7 +1405,6 @@ MonoBehaviour:
   erosion: 0.1
   dropsPerFrame: 3000
   dropsSoFar: 0
-  meshGenerator: {fileID: 613816556}
   rawImage: {fileID: 348508275}
   erosionShader: {fileID: 7200000, guid: c26882e1930c84546bdd32c0d0ca13f7, type: 3}
   terrainShader: {fileID: 4800000, guid: 32ba45959531f5347aeffad8b4f999bc, type: 3}
